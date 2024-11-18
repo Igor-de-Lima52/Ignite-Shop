@@ -10,6 +10,8 @@ import { HomeContainer, Product } from "../styles/pages/home";
 
 import 'keen-slider/keen-slider.min.css'
 import Stripe from "stripe";
+import { Handbag } from "phosphor-react";
+import { useShoppingCart } from "use-shopping-cart";
 
 interface HomeProps {
   products: {
@@ -20,6 +22,7 @@ interface HomeProps {
   }[]
 }
 
+
 export default function Home({ products }: HomeProps) {
   const [ sliderRef ] = useKeenSlider({
     slides: {
@@ -27,6 +30,21 @@ export default function Home({ products }: HomeProps) {
       spacing: 48
     }
   })
+
+  const { addItem } = useShoppingCart() 
+
+  function handleAddProductToCart(product: any){
+    const newPrice = parseFloat(product.price.replace('$', ''))
+
+    addItem({
+      id: product.id,	 
+      name: product.name, 
+      price: newPrice * 100, 
+      currency: 'USD',
+      image: product.imageUrl
+    })
+  }
+
 
   return (
     <>
@@ -40,8 +58,16 @@ export default function Home({ products }: HomeProps) {
               <Product className="keen-slider__slide">
                 <Image src={product.imageUrl} width={520} height={480} alt="" />
                 <footer>
-                  <strong>{product.name}</strong>
-                  <span>{product.price}</span>
+                  <div>
+                    <strong>{product.name}</strong>
+                    <span>{product.price}</span>
+                  </div>
+                  <button onClick={(e) => {
+                    e.preventDefault()
+                    handleAddProductToCart(product)
+                  }}>
+                    <Handbag size={24}/>
+                  </button>
                 </footer>
             </Product>
             </Link>

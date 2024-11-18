@@ -1,12 +1,11 @@
 import { stripe } from "@/src/lib/stripe"
 import { ImageContainer, ProductContainer, ProductDetails } from "@/src/styles/pages/product"
-import axios from "axios"
 import { GetStaticPaths, GetStaticProps } from "next"
 import Head from "next/head"
 import Image from "next/image"
 import { useRouter } from "next/router"
-import { useState } from "react"
 import Stripe from "stripe"
+import { useShoppingCart } from "use-shopping-cart"
 
 interface ProductProps {
   product: {
@@ -20,24 +19,39 @@ interface ProductProps {
 }
 
 export default function Product({ product } : ProductProps) {
-  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+  // const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
 
-  async function handleBuyProduct(){
-    try{
-      setIsCreatingCheckoutSession(true)
+  // async function handleBuyProduct(){
+  //   try{
+  //     setIsCreatingCheckoutSession(true)
 
-      const response = await axios.post('/api/checkout', {
-        priceId: product.defaultPriceId,
-      })
+  //     const response = await axios.post('/api/checkout', {
+  //       priceId: product.defaultPriceId,
+      
+  //     })
 
-      const { checkoutUrl } = response.data
+  //     const { checkoutUrl } = response.data
 
-      window.location.href = checkoutUrl
-    } catch (err){
-      // Connect this  with a watching tool (Datadog / Sentry)
-      setIsCreatingCheckoutSession(false)
-      alert('Fail redirecting to checkout')
-    }
+  //     window.location.href = checkoutUrl
+  //   } catch (err){
+  //     // Connect this  with a watching tool (Datadog / Sentry)
+  //     setIsCreatingCheckoutSession(false)
+  //     alert('Fail redirecting to checkout')
+  //   }
+  // }
+
+  const { addItem } = useShoppingCart()
+
+  function handleAddProductToCart(product: any){
+    const newPrice = parseFloat(product.price.replace('$', ''))
+
+    addItem({
+      id: product.id,	 
+      name: product.name, 
+      price: newPrice * 100, 
+      currency: 'USD',
+      image: product.imageUrl
+    })
   }
 
   const { isFallback } = useRouter()
@@ -61,7 +75,7 @@ export default function Product({ product } : ProductProps) {
 
           <p>{product.description}</p>
         
-          <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>Buy now</button>
+          <button onClick={() => handleAddProductToCart(product)}>Put on the bag</button>
         </ProductDetails>
       </ProductContainer>
     </>
